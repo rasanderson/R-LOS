@@ -1,11 +1,17 @@
 # Test it out
 
 library(raster)
+library(sf)
 
 # Elevation raster, 1 m resolution
 elev1 = raster(nrows = 6, ncols = 6, res = 1, 
                        xmn = 0, xmx = 6, ymn = 0, ymx = 6,
-                       vals = c(1:18,18:1))
+                       vals = c(1:6,
+                                7:12,
+                                13:18,
+                                13:18,
+                                7:12,
+                                1:6))
 plot(elev1)
 
 
@@ -47,3 +53,15 @@ xy2mat <- matrix(coordinates(elev1),
                  byrow = TRUE)
 xy2mat
 viewTo(elev1, c(0.5,0.5), xy2=xy2mat, h1=0, h2=23)
+
+# Let's try and return output from viewTo as a points map
+xy1_pt <- st_point(c(5.5, 0.5))
+plot(elev1)
+plot(xy1_pt, add=TRUE, pch=16)
+viewTo.res <- viewTo(elev1, xy=as.vector(xy1_pt), xy2=xy2mat, h1=7, h2=0)
+seenby <- xy2mat[viewTo.res,]
+#seenby
+
+seenby_mpt <- st_multipoint(seenby)
+#plot(elev1)
+plot(seenby_mpt, add=TRUE)
