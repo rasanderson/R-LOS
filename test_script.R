@@ -14,6 +14,10 @@ elev1 = raster(nrows = 6, ncols = 6, res = 1,
                                 1:6))
 plot(elev1)
 
+# elev1 = raster(nrows = 6, ncols = 6, res = 1, 
+#                xmn = 0, xmx = 6, ymn = 0, ymx = 6,
+#                vals = c(rep(1,17),2,rep(1,18)))
+# plot(elev1)
 
 # rasterprofile samples a raster along a straight line between two points
 # first pair is the coords in raster space (not row,col)
@@ -49,19 +53,24 @@ cansee(elev1, c(0.5,0.5), c(0.5,4.5), h1=0, h2=23)
 # Does viewTo now work? No. Gives an error.
 xy2mat <- matrix(coordinates(elev1),
                  ncol=2,
-                 nrow=36,
-                 byrow = TRUE)
+                 nrow=36)
 xy2mat
 viewTo(elev1, c(0.5,0.5), xy2=xy2mat, h1=0, h2=23)
 
 # Let's try and return output from viewTo as a points map
-xy1_pt <- st_point(c(5.5, 0.5))
+mastx <- 3.5
+masty <- 1.5
+h1 <- 0
+h2 <- 15
+
+xy1_pt <- st_point(c(mastx, masty))
 plot(elev1)
 plot(xy1_pt, add=TRUE, pch=16)
-viewTo.res <- viewTo(elev1, xy=as.vector(xy1_pt), xy2=xy2mat, h1=7, h2=0)
+viewTo.res <- viewTo(elev1, xy=as.vector(xy1_pt), xy2=xy2mat, h1=h1, h2=h2)
 seenby <- xy2mat[viewTo.res,]
 #seenby
 
 seenby_mpt <- st_multipoint(seenby)
 #plot(elev1)
 plot(seenby_mpt, add=TRUE)
+
