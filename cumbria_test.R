@@ -46,6 +46,33 @@ viewTo.res <- viewTo(elev_sub, xy=as.vector(xy1_pt), xy2=xy2mat, h1=h1, h2=h2)
 seenby <- xy2mat[viewTo.res,]
 
 seenby_mpt <- st_multipoint(seenby)
+seenby_mpt <- st_sfc(seenby_mpt, crs=proj4string(elev_sub))
+#seenby_mpt <- st_sfc(seenby_mpt, crs=27700) # EPSG version
+
+
+# rasterize only works properly (I think) with SpatialPoints
+tmp <- as_Spatial(seenby_mpt)
+tmp2 <- SpatialPoints(matrix(unlist(tmp@coords[[1]]), ncol=2,
+                             byrow=TRUE),
+                      proj4string=CRS(projection(elev_sub)))
+df <- data.frame(rep(1, dim(seenby)[1]))
+tmp2 <- SpatialPointsDataFrame(matrix(coordinates(tmp), ncol=2,
+                             byrow=TRUE), data=df,
+                      proj4string=CRS(projection(elev_sub)))
+
+
+
+# Create a raster version
+# This is much messier than expected
+# Convert multipoint sf into point sf
+seenby_p = st_cast(x = st_sfc(seenby_mpt), to = "POINT")
+# Convert point sf into point sp
+seenby_p_sp <- as_Spatial(seenby_p) # Gives CRS warning
+# Raster conversion
+raster_template = raster(extent(elev_sub), resolution = res(elev_sub),
+                         crs = crs(elev_sub))
+
+seenby_rst <- rasterize(seenby_p_sp, raster_template, field=1)
 
 plot(elev_sub)
 plot(xy1_pt, add=TRUE, pch=16)
@@ -53,3 +80,6 @@ plot(seenby_mpt, add=TRUE, cex=0.5)
 
 plot(elev_sub)
 plot(view500, add=TRUE)
+
+plot(elev_sub)
+plot(seenby_rst, add=TRUE)
