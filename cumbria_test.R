@@ -6,58 +6,6 @@ library(raster)
 library(sf)
 source("initial_LOS.R")
 
-viewshed <- function(dem=dem, windfarm=windfarm, h1=1.75, h2=75, radius=NULL,
-                     vector=FALSE){
-  if(class(dem) != "RasterLayer"){
-    print("Error: dem should be R raster package class 'RasterLayer'")
-    return()
-  }
-  if(!st_is(windfarm,"POINT")){
-    print("Error: windfarm should be R sf package class 'POINT'")
-    return()
-  }
-  
-  # Convert to matrix format and call viewTo() function
-  xy2mat <- matrix(coordinates(dem),
-                   ncol=2,
-                   nrow=nrow(coordinates(dem)))
-  
-  viewTo.res <- viewTo(dem, xy=as.vector(windfarm), xy2=xy2mat, h1=h1, h2=h2)
-  seenby <- xy2mat[viewTo.res,]
-  
-  # Vector output in sf format
-  seenby_mpt <- st_multipoint(seenby)
-  seenby_mpt <- st_sfc(seenby_mpt, crs=proj4string(dem))
-  
-  # If radius is set then need to buffer
-  if(!is.null(radius)){
-    if(radius <= 0){
-      print("Error: radius must be a postive integer")
-      return()
-    }
-    windfarm_buf <- st_buffer(windfarm, dist = radius)
-    windfarm_buf <- st_sfc(windfarm_buf, crs=proj4string(dem))
-    seenby_mpt <- st_intersection(seenby_mpt, windfarm_buf)
-  }
-  
-  # Create a raster version
-  # Convert multipoint sf into point sf
-  seenby_p = st_cast(x = st_sfc(seenby_mpt), to = "POINT")
-  # Convert point sf into point sp
-  seenby_p_sp <- as_Spatial(seenby_p) # Gives CRS warning
-  # Raster conversion
-  raster_template = raster(extent(dem), resolution = res(dem),
-                           crs = crs(dem))
-  
-  seenby_rst <- rasterize(seenby_p_sp, raster_template, field=1)
-  
-  if(vector == TRUE){
-    return(seenby_mpt)
-  } else {
-    return(seenby_rst)
-  }
-}
-
 elev500 <- raster("elevation500m.tif")
 view500 <- raster("Viewshed500.tif")
 res(elev500)
@@ -88,6 +36,15 @@ plot(xy1_pt, add=TRUE, pch=16)
 elev_sub <- crop(elev500, rmask)
 plot(elev_sub)
 plot(xy1_pt, add=TRUE, pch=16)
+
+
+my_viewshed_rst <- viewshed(dem=elev_sub, windfarm=xy1_pt, radius=5000)
+plot(elev_sub)
+plot(my_viewshed_rst, add=TRUE, legend=FALSE)
+
+my_viewshed_mpt <- viewshed(dem=elev_sub, windfarm=xy1_pt, radius=5000, vector=TRUE)
+plot(elev_sub)
+plot(my_viewshed_mpt, add=TRUE, legend=FALSE)
 
 
 xy2mat <- matrix(coordinates(elev_sub),
