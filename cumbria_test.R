@@ -29,16 +29,6 @@ viewshed <- function(dem=dem, windfarm=windfarm, h1=1.75, h2=75, radius=NULL,
   seenby_mpt <- st_multipoint(seenby)
   seenby_mpt <- st_sfc(seenby_mpt, crs=proj4string(dem))
   
-  # Convert to sp format to permit rasterisation
-  tmp <- as_Spatial(seenby_mpt)
-  tmp2 <- SpatialPoints(matrix(unlist(tmp@coords[[1]]), ncol=2,
-                               byrow=TRUE),
-                        proj4string=CRS(projection(dem)))
-  df <- data.frame(rep(1, dim(seenby)[1]))
-  tmp2 <- SpatialPointsDataFrame(matrix(coordinates(tmp), ncol=2,
-                                        byrow=TRUE), data=df,
-                                 proj4string=CRS(projection(dem)))
-  
   # Create a raster version
   # Convert multipoint sf into point sf
   seenby_p = st_cast(x = st_sfc(seenby_mpt), to = "POINT")
