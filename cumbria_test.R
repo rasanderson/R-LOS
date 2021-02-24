@@ -1,7 +1,7 @@
 # Compare with set of results from ArcGIS Cumbria
 # Have 250m and 500m resolution files. Start with 500m as
 # worried about slow performance
-
+# 
 library(raster)
 library(sf)
 source("LOS.R")
