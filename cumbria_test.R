@@ -4,7 +4,7 @@
 
 library(raster)
 library(sf)
-source("initial_LOS.R")
+source("LOS.R")
 
 elev500 <- raster("elevation500m.tif")
 view500 <- raster("Viewshed500.tif")
