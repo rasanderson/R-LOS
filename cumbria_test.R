@@ -29,6 +29,17 @@ viewshed <- function(dem=dem, windfarm=windfarm, h1=1.75, h2=75, radius=NULL,
   seenby_mpt <- st_multipoint(seenby)
   seenby_mpt <- st_sfc(seenby_mpt, crs=proj4string(dem))
   
+  # If radius is set then need to buffer
+  if(!is.null(radius)){
+    if(radius <= 0){
+      print("Error: radius must be a postive integer")
+      return()
+    }
+    windfarm_buf <- st_buffer(windfarm, dist = radius)
+    windfarm_buf <- st_sfc(windfarm_buf, crs=proj4string(dem))
+    seenby_mpt <- st_intersection(seenby_mpt, windfarm_buf)
+  }
+  
   # Create a raster version
   # Convert multipoint sf into point sf
   seenby_p = st_cast(x = st_sfc(seenby_mpt), to = "POINT")
