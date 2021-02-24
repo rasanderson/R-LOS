@@ -40,7 +40,11 @@ viewshed <- function(dem=dem, windfarm=windfarm, h1=1.75, h2=75, radius=NULL,
   
   seenby_rst <- rasterize(seenby_p_sp, raster_template, field=1)
   
-  return(seenby_rst)
+  if(vector == TRUE){
+    return(seenby_mpt)
+  } else {
+    return(seenby_rst)
+  }
 }
 
 elev500 <- raster("elevation500m.tif")
